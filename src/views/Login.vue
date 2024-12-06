@@ -34,7 +34,7 @@
           bpwd: this.loginForm.password
         }).then(response => {
           if (response.data.code === 200) {
-            ElMessage.success('登录成功');
+            ElMessage.success('success');
             localStorage.setItem('token', response.data.data.token);
             this.$router.push('/');
           } else {
