@@ -1,8 +1,8 @@
 
 import { createRouter, createWebHistory } from 'vue-router';
-import Login from '../views/Login.vue';
+import Login from '@/views/Login.vue';
 import AddPublicize from '@/components/AddPublicize.vue';
-import Register from '../views/Register.vue';
+import Register from '@/views/Register.vue';
 // ...existing code...
 
 const routes = [
