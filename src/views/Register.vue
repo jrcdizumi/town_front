@@ -76,7 +76,11 @@
   
       const checkUserName = () => {
         if (user.uname) {
-          axios.post('http://172.22.99.79:8080/user/checkUserName', { username: user.uname })
+          axios.post('http://172.22.99.79:8080/user/checkUserName', user.uname, {
+            headers: {
+              'Content-Type': 'text/plain'
+            }
+          })
             .then(response => {
               if (response.data.code !== 200) {
                 ElMessage.error(response.data.message)
@@ -90,7 +94,11 @@
   
       const checkPassWord = () => {
         if (user.bpwd) {
-          axios.post('http://172.22.99.79:8080/user/checkPassWord', { password: user.bpwd })
+          axios.post('http://172.22.99.79:8080/user/checkPassWord', user.bpwd,{
+            headers: {
+              'Content-Type': 'text/plain'
+            }
+          })
             .then(response => {
               if (response.data.code !== 200) {
                 ElMessage.error(response.data.message)
