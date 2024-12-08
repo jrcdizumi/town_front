@@ -1,4 +1,3 @@
-
 import { createRouter, createWebHistory } from 'vue-router';
 import Login from '@/views/Login.vue';
 import AddPublicize from '@/components/AddPublicize.vue';
@@ -30,6 +29,16 @@ const routes = [
     meta: {
       title : '我宣传-添加'
     }
+  },
+  {
+    path: '/town-promotional-list',
+    name: 'TownPromotionalList',
+    component: () => import('@/components/TownPromotionalList.vue')
+  },
+  {
+    path: '/town-promotional-detail/:id',
+    name: 'TownPromotionalDetail',
+    component: () => import('@/components/TownPromotionalDetail.vue')
   }
 ];
 

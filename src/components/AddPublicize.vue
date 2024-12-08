@@ -3,14 +3,14 @@
       <el-form :model="form" ref="form" label-width="120px">
 
           <!-- 三级级联选择器：省份、城市、乡镇 -->
-        <el-form-item label="地址">
+        <el-form-item label="乡镇">
             <el-cascader :options="provinces" placeholder="请选择省份/城市/乡镇" v-model="form.address" clearable
             :props="{
             expandTrigger: 'hover',
             children: 'children',
             emitPath: true, // 设置为false，只返回最后一级的标签
             showAllLevels: false ,
-            value: 'label'
+            value: 'value'
             }"
             ></el-cascader>
         </el-form-item>
@@ -78,48 +78,9 @@
           promotionDescription: '',
           videoUrl: '',
           fileList: [],
+          townID:''
         },
-         // 三级联动数据
-         provinces: [
-        {
-            label: '北京市',
-            children: [
-                {
-                    label: '东城区',
-                    children: [
-                        { label: '药王店' },
-                        { label: '天坛' }
-                    ]
-                },
-                {
-                    label: '海淀区',
-                    children: [
-                        { label: '五道口' },
-                        { label: '知春路' }
-                    ]
-                }
-            ]
-        },
-        {
-            label: '广东省',
-            children: [
-                {
-                    label: '广州市',
-                    children: [
-                        { label: '天河区' },
-                        { label: '越秀区' }
-                    ]
-                },
-                {
-                    label: '深圳市',
-                    children: [
-                        { label: '南山区' },
-                        { label: '福田区' }
-                    ]
-                }
-            ]
-        }
-         ],
+        provinces: [], // 初始化为空数组，后续通过接口获取数据
         fileList: [], // 初始化文件列表为空，后续上传成功后会添加元素进来
         acceptFileType: ['image/jpeg', 'image/png'], // 定义可接受的文件类型
         maxFileSize: 1024 * 1024, // 1MB
@@ -130,7 +91,53 @@
       ],
       };
     },
+    created() {
+      this.loadInitialData();
+    },
     methods: {
+        loadInitialData() {
+          // 需要加载省份和宣传类型的数据
+          Promise.all([
+            this.fetchTowns(), // 调用获取乡镇信息的函数
+            this.fetchPromotionTypes()
+          ])
+          .then(() => {
+            console.log('数据加载成功');
+          })
+          .catch(error => {
+            console.error('数据加载失败:', error);
+            this.loadError = true;
+            this.$message.error('数据加载失败，请刷新页面重试。');
+          });
+        },
+        fetchTowns() {
+          return this.$axios.get('http://localhost:8080/publicize/getTownList')
+            .then(response => {
+              if (response.data.code === 200) {
+                this.provinces = JSON.parse(response.data.data);
+                console.log(this.provinces);
+              } else {
+                throw new Error(response.data.message || '获取乡镇信息失败');
+              }
+            });
+        },
+        // 获取宣传类型数据的函数
+        fetchPromotionTypes() {
+          return this.$axios.get('http://localhost:8080/publicize/getTypeList')
+            .then(response => {
+              if (response.data.code === 200) {
+                const typesData = response.data.data;
+                // 将对象转换为数组，label为键，value为值
+                this.promotionTypes = Object.keys(typesData).map(key => ({
+                  label: key,
+                  value: typesData[key],
+                }));
+                console.log(typesData);
+              } else {
+                throw new Error(response.data.message || '获取宣传类型数据失败');
+              }
+            });
+        },
         beforeUpload(file) {
             console.log(file.type);
             const isValidType = this.acceptFileType.includes(file.type);
@@ -201,14 +208,46 @@
         submitForm() {
             // 打印所有表单值
             this.form.fileList = this.fileList;
+            this.form.townID = this.form.address[this.form.address.length - 1];
             console.log('表单数据:', this.form);
-            
-            // 这里可以添加表单提交逻辑，例如使用 axios 发送请求
-            // this.$axios.post('/api/submit', this.form).then(response => {
-            //   // 处理响应
-            // }).catch(error => {
-            //   this.$message.error('提交失败');
-            // });
+            // 校验表单字段是否为空
+            if (!this.form.townID || !this.form.promotionType || !this.form.promotionTitle || !this.form.promotionDescription) {
+              this.$message.error('乡镇名、宣传类型、主题名称、描述均不能为空');
+              return;
+            }
+
+                 // 构造提交数据
+            const submitData = {
+              ptitle: this.form.promotionTitle,
+              pdesc: this.form.promotionDescription,
+              pfileList: this.form.fileList.map(item => item.url).join(','),
+              pstate: 0, // 状态设为已发布
+              ptypeId: this.form.promotionType,
+              videourl: this.form.videoUrl, // 添加视频链接参数
+              townID: this.form.townID
+            };
+            console.log('提交数据:', submitData);
+            // 获取token
+            const token = localStorage.getItem('token');
+            // 发送POST请求到后端
+            this.$axios.post('http://localhost:8080/publicize/submit', submitData, {
+                headers: {
+                    token: `${token}`
+                }
+            })
+            .then(response => {
+              if (response.data.code === 200) {
+                this.$message.success('提交成功');
+                // 重置表单
+                this.resetForm();
+              } else {
+                this.$message.error(`提交失败: ${response.data.message || '未知错误'}`);
+              }
+            })
+            .catch(error => {
+              console.error('提交错误:', error);
+              // this.$message.error('提交失败，请稍后再试');
+            });
         },
         handleExceedLimit(files, fileList) {
         this.$message.error('超过文件上线，请先删除部分文件再上传');
