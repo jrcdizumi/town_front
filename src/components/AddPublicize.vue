@@ -93,7 +93,9 @@
       };
     },
     created() {
-      checkToken(this.$router)
+      checkToken(router).then(valid => {
+          router.push('/login')
+      })
       this.loadInitialData();
     },
     methods: {

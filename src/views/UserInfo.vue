@@ -138,7 +138,9 @@
       }
   
       onMounted(() => {
-        checkToken(router)
+        checkToken(router).then(valid => {
+          router.push('/login')
+        })
         getUserInfo()
       })
   
