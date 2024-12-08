@@ -19,19 +19,16 @@ export function checkToken(router) {
         } else {
           // 验证失败，跳转到登录界面
           ElMessage.error('未登录或登录已过期')
-          router.push('/login')
           resolve(false)
         }
       }).catch(error => {
         console.error('验证失败', error)
         ElMessage.error('未登录或登录已过期')
-        router.push('/login')
         resolve(false)
       })
     } else {
       // 不存在 token，跳转到登录界面
       ElMessage.error('未登录或登录已过期')
-      router.push('/login')
       resolve(false)
     }
   })
