@@ -68,6 +68,7 @@
   </template>
   
   <script>
+  import { checkToken } from '../utils/tokenUtils'
   export default {
     data() {
       return {
@@ -92,6 +93,7 @@
       };
     },
     created() {
+      checkToken(this.$router)
       this.loadInitialData();
     },
     methods: {

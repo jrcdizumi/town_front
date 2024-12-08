@@ -38,9 +38,9 @@
   
   <script>
   import { reactive, ref, onMounted } from 'vue'
-  import { ElMessage } from 'element-plus'
   import axios from 'axios'
   import { useRouter } from 'vue-router'
+  import { checkToken } from '../utils/tokenUtils'
   
   export default {
     setup() {
@@ -84,15 +84,6 @@
       const userForm = ref(null)
       const router = useRouter()
   
-      // 检查token
-      const checkToken = () => {
-        const token = localStorage.getItem('token')
-        if (!token) {
-          ElMessage.error('未登录或登录已过期')
-          router.push('/login')
-        }
-      }
-  
       // 获取用户信息
       const getUserInfo = () => {
         const token = localStorage.getItem('token')
@@ -120,7 +111,7 @@
       }
   
       onMounted(() => {
-        checkToken()
+        checkToken(router)
         getUserInfo()
       })
   

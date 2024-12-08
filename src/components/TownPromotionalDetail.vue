@@ -6,9 +6,11 @@
       <p>描述: {{ promotional.pdesc }}</p>
       <p>图片列表:</p>
       <el-image
-        v-for="url in promotional.pfileList.split(',')"
+        v-for="(url, index) in imageList"
         :key="url"
         :src="url"
+        :preview-src-list="imageList"
+        :preview-index="index"
         style="width: 100px; height: 100px; margin-right: 10px"
       ></el-image>
       <p>视频链接: <a :href="promotional.videourl" target="_blank">{{ promotional.videourl }}</a></p>
@@ -39,6 +41,11 @@ export default {
       pupdatedate: '2024-12-08 17:26:11',
       videourl: ''
     };
+  },
+  computed: {
+    imageList() {
+      return this.promotional.pfileList ? this.promotional.pfileList.split(',') : [];
+    }
   }
 };
 </script>
