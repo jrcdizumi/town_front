@@ -16,6 +16,8 @@
   
   <script>
   import { ElMessage } from 'element-plus';
+  import { onMounted } from 'vue'
+  import axios from 'axios'
   
   export default {
     name: 'Login',
@@ -25,6 +27,24 @@
           username: '',
           password: ''
         }
+      }
+    },
+    mounted() {
+      const token = localStorage.getItem('token')
+      if (token) {
+        this.$axios.get('http://localhost:8080/user/checkLogin', {
+          headers: {
+            'token': token
+          }
+        }).then(response => {
+          const res = response.data
+          if (res.code === 200) {
+            // 已登录，跳转到 home 界面
+            this.$router.push('/')
+          }
+        }).catch(error => {
+          console.error('验证失败', error)
+        })
       }
     },
     methods: {

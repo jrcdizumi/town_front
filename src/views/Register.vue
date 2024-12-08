@@ -33,12 +33,14 @@
   </template>
   
   <script>
-  import { reactive, ref } from 'vue'
+  import { reactive, ref, onMounted } from 'vue'
   import { ElMessage } from 'element-plus'
   import axios from 'axios'
+  import { useRouter } from 'vue-router'
   
   export default {
     setup() {
+      const router = useRouter()
       const user = reactive({
         uname: '',
         bpwd: '',
@@ -133,6 +135,25 @@
       const onReset = () => {
         userForm.value.resetFields()
       }
+  
+      onMounted(() => {
+        const token = localStorage.getItem('token')
+        if (token) {
+          axios.get('http://localhost:8080/user/checkLogin', {
+            headers: {
+              'token': token
+            }
+          }).then(response => {
+            const res = response.data
+            if (res.code === 200) {
+              // 已登录，跳转到 home 界面
+              router.push('/')
+            }
+          }).catch(error => {
+            console.error('验证失败', error)
+          })
+        }
+      })
   
       return {
         user,

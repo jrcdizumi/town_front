@@ -3,6 +3,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 import Login from '@/views/Login.vue';
 import AddPublicize from '@/components/AddPublicize.vue';
 import Register from '@/views/Register.vue';
+import UserInfo from '@/views/UserInfo.vue';
 // ...existing code...
 
 const routes = [
@@ -16,6 +17,11 @@ const routes = [
     path: '/login',
     name: 'Login',
     component: Login
+  },
+  {
+    path: '/userinfo',
+    name: 'UserInfo',
+    component: UserInfo
   },
   {
     path: '/addpublicize',
