@@ -15,7 +15,6 @@ export function checkToken(router) {
         if (res.code === 200) {
           // 验证成功
           console.log('登录验证成功')
-          router.push('/')
           resolve(true)
         } else {
           // 验证失败，跳转到登录界面

@@ -28,6 +28,11 @@
       <el-form-item label="密码" prop="bpwd">
         <el-input type="password" v-model="user.bpwd" @blur="checkPassWord"></el-input>
       </el-form-item>
+
+      <!-- 确认密码输入框 -->
+      <el-form-item label="确认密码" prop="confirmPassword">
+        <el-input type="password" v-model="user.confirmPassword"></el-input>
+      </el-form-item>
   
       <el-form-item>
         <el-button type="primary" @click="onSubmit">保存修改</el-button>
@@ -42,6 +47,7 @@
   import axios from 'axios'
   import { useRouter } from 'vue-router'
   import { checkToken } from '../utils/tokenUtils'
+  import { ElMessage, ElMessageBox } from 'element-plus' // 添加导入
   
   export default {
     setup() {
@@ -52,27 +58,47 @@
         idno: '',
         phoneno: '',
         description: '',
-        bpwd: ''
+        bpwd: '',
+        confirmPassword: '' // 添加确认密码
       })
   
       const rules = {
         phoneno: [
-          { required: true, message: '请输入联系电话', trigger: 'blur' },
+          { required: false, message: '请输入联系电话', trigger: 'blur' },
           { pattern: /^1[3-9]\d{9}$/, message: '请输入有效的手机号码', trigger: 'blur' }
         ],
         bpwd: [
-          { required: true, message: '请输入密码', trigger: 'blur' },
+          { required: false, message: '请输入密码', trigger: 'blur' },
           { min: 6, message: '密码至少6位', trigger: 'blur' },
           {
             validator: (rule, value, callback) => {
-              const digitCount = (value.match(/\d/g) || []).length
-              if (digitCount < 2) {
-                callback(new Error('密码至少包含两个数字'))
-              } else if (
-                value === value.toLowerCase() ||
-                value === value.toUpperCase()
-              ) {
-                callback(new Error('密码需包含大小写字母'))
+              if (!value) {
+                callback()
+              } else {
+                const digitCount = (value.match(/\d/g) || []).length
+                if (digitCount < 2) {
+                  callback(new Error('密码至少包含两个数字'))
+                } else if (
+                  value === value.toLowerCase() ||
+                  value === value.toUpperCase()
+                ) {
+                  callback(new Error('密码需包含大小写字母'))
+                } else {
+                  callback()
+                }
+              }
+            },
+            trigger: 'blur'
+          }
+        ],
+        confirmPassword: [
+          { required: false, message: '请确认密码', trigger: 'blur' },
+          {
+            validator: (rule, value, callback) => {
+              if (!value) {
+                callback()
+              } else if (value !== user.bpwd) {
+                callback(new Error('两次密码输入不一致'))
               } else {
                 callback()
               }
@@ -135,19 +161,35 @@
       const onSubmit = () => {
         userForm.value.validate((valid) => {
           if (valid) {
-            const token = localStorage.getItem('token')
-            axios
-              .post('http://localhost:8080/user/updateUserInfo', user, { headers: { token } })
-              .then((response) => {
-                if (response.data.code === 200) {
-                  ElMessage.success('用户信息更新成功')
-                } else {
-                  ElMessage.error(response.data.message)
-                }
-              })
-              .catch(() => {
-                ElMessage.error('更新失败')
-              })
+            ElMessageBox.confirm('确定要保存修改吗?', '确认', {
+              confirmButtonText: '确定',
+              cancelButtonText: '取消',
+              type: 'warning'
+            }).then(() => {
+              const token = localStorage.getItem('token')
+              const updateData = { ...user }
+              delete updateData.confirmPassword
+              if (!updateData.bpwd) {
+                delete updateData.bpwd
+              }
+              axios
+                .post('http://localhost:8080/user/updateUserInfo', updateData, { 
+                  headers: { 'token': token }
+                })
+                .then((response) => {
+                  if (response.data.code === 200) {
+                    ElMessage.success('用户信息更新成功')
+                    getUserInfo()
+                  } else {
+                    ElMessage.error(response.data.code)
+                  }
+                })
+                .catch(() => {
+                  ElMessage.error('更新失败')
+                })
+            }).catch(() => {
+              ElMessage.info('取消保存')
+            })
           } else {
             ElMessage.error('请完善表单信息')
           }

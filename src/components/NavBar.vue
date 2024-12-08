@@ -1,25 +1,23 @@
 <template>
   <nav class="navbar">
-    <ul>
-      <li><router-link to="/">首页</router-link></li>
-      <li><router-link to="/about">关于我们</router-link></li>
-      <li><router-link to="/contact">联系我们</router-link></li>
-    </ul>
-    <div class="user-info">
-      <template v-if="isLoggedIn">
-        <a @click="navigateToUserInfo">用户信息</a>
-      </template>
-      <template v-else>
-        <router-link to="/login">登录</router-link>
-        <router-link to="/register">注册</router-link>
-      </template>
+    <div class="bar">
+      <ul class="navbar-list">
+        <li><router-link to="/" :class="{ active: isActive('/') }">首页</router-link></li>
+        <template v-if="isLoggedIn">
+          <li><router-link to="/userinfo" :class="{ active: isActive('/userinfo') }">用户信息</router-link></li>
+        </template>
+        <template v-else>
+          <li><router-link to="/login">登录</router-link></li>
+          <li><router-link to="/register">注册</router-link></li>
+        </template>
+      </ul>
     </div>
   </nav>
 </template>
 
 <script>
 import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { checkToken } from '../utils/tokenUtils'
 
 export default {
@@ -27,6 +25,7 @@ export default {
   setup(props, { emit }) {
     const isLoggedIn = ref(false)
     const router = useRouter()
+    const route = useRoute()
 
     onMounted(() => {
       checkToken(router).then(valid => {
@@ -38,9 +37,14 @@ export default {
       router.push('/userinfo')
     }
 
+    const isActive = (path) => {
+      return route.path === path
+    }
+
     return {
       isLoggedIn,
-      navigateToUserInfo
+      navigateToUserInfo,
+      isActive
     }
   }
 }
@@ -61,5 +65,19 @@ export default {
 .navbar a {
   color: white;
   text-decoration: none;
+}
+.navbar a.active {
+  color: #555; /* 深色 */
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+}
+
+.navbar-list {
+  display: flex;
+  list-style: none;
 }
 </style>
