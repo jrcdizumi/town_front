@@ -36,6 +36,11 @@ const routes = [
     component: () => import('@/components/TownPromotionalList.vue')
   },
   {
+    path: '/',
+    name: 'Home',
+    component: () => import('@/components/TownPromotionalList.vue')
+  },
+  {
     path: '/town-promotional-detail/:id',
     name: 'TownPromotionalDetail',
     component: () => import('@/components/TownPromotionalDetail.vue')

@@ -32,6 +32,7 @@
       <el-form-item>
         <el-button type="primary" @click="onSubmit">保存修改</el-button>
         <el-button @click="onReset">重置</el-button>
+        <el-button type="danger" @click="onLogout">退出登录</el-button>
       </el-form-item>
     </el-form>
   </template>
@@ -156,6 +157,11 @@
       const onReset = () => {
         getUserInfo()
       }
+
+      const onLogout = () => {
+        localStorage.removeItem('token')
+        router.push('/')
+      }
   
       return {
         user,
@@ -163,7 +169,8 @@
         userForm,
         checkPassWord,
         onSubmit,
-        onReset
+        onReset,
+        onLogout
       }
     }
   }
