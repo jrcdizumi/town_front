@@ -94,6 +94,7 @@
     },
     created() {
       checkToken(router).then(valid => {
+        if (!valid)
           router.push('/login')
       })
       this.loadInitialData();

@@ -139,7 +139,8 @@
   
       onMounted(() => {
         checkToken(router).then(valid => {
-          router.push('/login')
+          if (!valid)
+            router.push('/login')
         })
         getUserInfo()
       })
