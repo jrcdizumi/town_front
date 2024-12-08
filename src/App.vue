@@ -1,37 +1,46 @@
-<script setup>
-import HelloWorld from './components/HelloWorld.vue'
-import TheWelcome from './components/TheWelcome.vue'
-</script>
-
 <template>
   <router-view></router-view>
 </template>
 
-<style scoped>
-header {
-  line-height: 1.5;
-}
+<script>
+import { onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import axios from 'axios'
 
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
-}
+export default {
+  setup() {
+    const router = useRouter()
 
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
+    onMounted(() => {
+      const token = localStorage.getItem('token')
+      if (token) {
+        // 如果存在 token，发送到后端进行验证
+        axios.get('http://localhost:8080/user/checkLogin', {
+          headers: {
+            'token': token
+          }
+        }).then(response => {
+          const res = response.data
+          if (res.code === 200) {
+            // 验证成功，继续加载应用
+            console.log('登录验证成功')
+          } else if (res.code === 504) {
+            // 未登录，重定向到登录页面
+            router.push('/login')
+          } else {
+            // 处理其他返回码
+            console.error(res.message)
+            router.push('/login')
+          }
+        }).catch(error => {
+          console.error('验证失败', error)
+          router.push('/login')
+        })
+      } else {
+        // 不存在 token，重定向到登录页面
+        router.push('/login')
+      }
+    })
   }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
 }
-</style>
+</script>

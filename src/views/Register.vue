@@ -76,7 +76,7 @@
   
       const checkUserName = () => {
         if (user.uname) {
-          axios.post('http://172.22.99.79:8080/user/checkUserName', user.uname, {
+          axios.post('http://localhost:8080/user/checkUserName', user.uname, {
             headers: {
               'Content-Type': 'text/plain'
             }
@@ -94,7 +94,7 @@
   
       const checkPassWord = () => {
         if (user.bpwd) {
-          axios.post('http://172.22.99.79:8080/user/checkPassWord', user.bpwd,{
+          axios.post('http://localhost:8080/user/checkPassWord', user.bpwd,{
             headers: {
               'Content-Type': 'text/plain'
             }
@@ -113,7 +113,7 @@
       const onSubmit = () => {
         userForm.value.validate(valid => {
           if (valid) {
-            axios.post('http://172.22.99.79:8080/user/regist', user)
+            axios.post('http://localhost:8080/user/regist', user)
               .then(response => {
                 if (response.data.code === 200) {
                   ElMessage.success('注册成功')

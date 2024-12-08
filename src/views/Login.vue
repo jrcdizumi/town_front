@@ -29,7 +29,7 @@
     },
     methods: {
       handleLogin() {
-        this.$axios.post('http://172.22.99.79:8080/user/login', {
+        this.$axios.post('http://localhost:8080/user/login', {
           uname: this.loginForm.username,
           bpwd: this.loginForm.password
         }).then(response => {
