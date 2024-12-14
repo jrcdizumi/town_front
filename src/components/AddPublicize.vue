@@ -93,9 +93,9 @@
       };
     },
     created() {
-      checkToken(router).then(valid => {
+      checkToken(this.$router).then(valid => {
         if (!valid)
-          router.push('/login')
+          this.$router.push('/login')
       })
       this.loadInitialData();
     },

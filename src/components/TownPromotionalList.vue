@@ -33,7 +33,7 @@
       </el-table-column>
       <el-table-column label="操作" width="120">
         <template v-slot="scope">
-          <el-button @click="viewDetails(scope.row)" type="primary" size="small">查看详情</el-button>
+          <el-button @click="viewDetails(scope.row.pid)" type="primary" size="small">查看详情</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -262,9 +262,9 @@ export default {
       const type = this.promotionTypes.find(type => type.value === ptypeId);
       return type ? type.label : '未知类型';
     },
-    viewDetails(item) {
-      // 跳转到详情页
-      this.$router.push({ name: 'TownPromotionalDetail', params: { id: item.pid } });
+    viewDetails(pid) {
+      // 跳转到详情页并传递 pid 参数
+      this.$router.push({ name: 'TownPromotionalDetail', params: { id: pid } });
     },
     handlePageChange(page) {
       this.currentPage = page;
