@@ -98,10 +98,10 @@ export default {
       provinces: [],
       fileList: [],
       address: [],
-      imageList: [], // 新增：存储图片文件��表
+      imageList: [], // 新增：存储图片文件列表
       videoList: [], // 新增：存储视频文件列表
       isPreviewVisible: false, // 修改：初始为 false，控制预览弹窗的显示
-      previewUrl: '',          // ��增：存储预览图片的URL
+      previewUrl: '',          // 新增：存储预览图片的URL
     };
   },
   created() {
@@ -267,6 +267,31 @@ export default {
       console.log("handlePreview",file);
       this.previewUrl = file.url;
       this.isPreviewVisible = true;
+    },
+    customHttpRequest({onSuccess, onError, file}) {
+      const formData = new FormData();
+      formData.append('file', file);
+      this.$axios.post('http://localhost:8080/publicize/uploadImage', formData)
+        .then(response => {
+          if(response.data.code === 200) {
+            this.$message.success('上传成功');
+            this.imageList.push({uid: file.uid, url: response.data.data});
+            onSuccess(response);
+          } else {
+            this.$message.error('上传失败');
+            onError('后端接口上传失败');
+          }
+        })
+        .catch(error => {
+          onError(error);
+        });
+    },
+    handleRemove(file) {
+      const removedFileIndex = this.imageList.findIndex(item => item.uid === file.uid);
+      if (removedFileIndex !== -1) {
+        this.imageList.splice(removedFileIndex, 1);
+        this.$message.success('已删除图片');
+      }
     },
   }
 };
