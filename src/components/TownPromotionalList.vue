@@ -26,11 +26,11 @@
           </div>
         </template>
       </el-table-column>
-      <el-table-column prop="videourl" label="视频介绍">
+      <!-- <el-table-column prop="videourl" label="视频介绍">
         <template v-slot="scope">
           <a :href="scope.row.videourl" target="_blank">{{ scope.row.videourl }}</a>
         </template>
-      </el-table-column>
+      </el-table-column> -->
       <el-table-column label="操作" width="120">
         <template v-slot="scope">
           <el-button @click="viewDetails(scope.row.pid)" type="primary" size="small">查看详情</el-button>

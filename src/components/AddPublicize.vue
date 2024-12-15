@@ -180,6 +180,18 @@
             });
        },
        customVideoHttpRequest({onSuccess, onError, file}) {
+         const isVideo = file.type.startsWith('video/');
+         const isValidSize = file.size <= 100 * 1024 * 1024; // 100MB
+         if (!isVideo) {
+             this.$message.error('只能上传视频文件');
+             onError('文件类型错误');
+             return false;
+         }
+         if (!isValidSize) {
+             this.$message.error('视频大小不能超过100MB');
+             onError('文件大小超出限制');
+             return false;
+         }
          const formData = new FormData();
          formData.append('file', file);
          this.$axios.post('http://localhost:8080/publicize/uploadVideo', formData)

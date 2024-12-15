@@ -12,21 +12,36 @@
       <p>宣传类型: {{ getTypeLabel(promotional.ptypeId) }}</p>
       <p>描述: {{ promotional.pdesc }}</p>
       <p>图片列表:</p>
-      <el-image
-        v-for="(url, index) in imageList"
-        :key="url"
-        :src="url"
-        :preview-src-list="imageList"
-        :preview-index="index"
-        style="width: 100px; height: 100px; margin-right: 10px"
-      ></el-image>
-      <p>视频链接: <a :href="promotional.videourl" target="_blank">{{ promotional.videourl }}</a></p>
+      <div class="media-container">
+        <el-image
+          v-for="(url, index) in imageList"
+          :key="url"
+          :src="url"
+          :preview-src-list="imageList"
+          :preview-index="index"
+          class="image-item"
+        ></el-image>
+      </div>
+      <video id="myVideo" 
+        v-if="promotional.videourl"
+        :key="promotional.videourl"      
+        class="video-item" 
+        controls 
+        autoplay="false"
+        preload="auto">
+        <source :src="promotional.videourl" type="video/mp4">  
+      </video> 
     </el-card>
   </div>
 </template>
 
 <script>
+import VideoPlayer from 'vue-video-player' // 确保导入视频播放器组件
+
 export default {
+  components: {
+    VideoPlayer // 注册视频播放器组件
+  },
   data() {
     return {
       promotional: {},
@@ -187,5 +202,24 @@ export default {
 <style scoped>
 .detail-container {
   padding: 20px;
+}
+.media-container {
+  display: flex;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+.image-item {
+  width: calc(33.33% - 10px);
+  height: auto;
+  margin-right: 10px;
+  margin-bottom: 10px;
+}
+.image-item:nth-child(3n) {
+  margin-right: 0;
+}
+.video-item {
+  width: 100%;
+  height: auto;
+  margin-bottom: 10px;
 }
 </style>

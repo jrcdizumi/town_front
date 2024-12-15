@@ -71,6 +71,7 @@
             limit=1
             :on-exceed="handleExceedLimit"
             :file-list="videoList"
+            :before-upload="beforeVideoUpload"
         >
             <i class="el-icon-upload"></i>
             <div class="el-upload__text">将视频拖到此处，或<em>点击上传</em></div>
@@ -285,6 +286,39 @@ export default {
         .catch(error => {
           onError(error);
         });
+    },
+    customVideoHttpRequest({onSuccess, onError, file}) {
+      const formData = new FormData();
+      formData.append('file', file);
+      this.$axios.post('http://localhost:8080/publicize/uploadVideo', formData) // 修改：上传视频的接口
+        .then(response => {
+          if(response.data.code === 200) {
+            this.$message.success('视频上传成功');
+            this.videoList.push({uid: file.uid, url: response.data.data});
+            onSuccess(response);
+          } else {
+            this.$message.error('视频上传失败');
+            onError('后端接口上传失败');
+          }
+        })
+        .catch(error => {
+          onError(error);
+        });
+    },
+    beforeVideoUpload(file) {
+      const isVideo = file.type === 'video/mp4';
+      const isLt10M = file.size / 1024 / 1024 < 10;
+
+      if (!isVideo) {
+        this.$message.error('上传视频格式不正确');
+      }
+      if (!isLt10M) {
+        this.$message.error('上传视频大小不能超过 10MB');
+      }
+      return isVideo && isLt10M;
+    },
+    handleExceedLimit(files, fileList) {
+      this.$message.warning('只能上传一个视频');
     },
     handleRemove(file) {
       const removedFileIndex = this.imageList.findIndex(item => item.uid === file.uid);
