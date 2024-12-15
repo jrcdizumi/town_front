@@ -1,8 +1,15 @@
 <template>
   <div class="detail-container">
     <el-card>
-      <h2>{{ promotional.ptitle }}</h2>
-      <p>类型: {{ getTypeLabel(promotional.ptypeId) }}</p>
+      <div class="header" style="display: flex; justify-content: space-between;">
+        <h2>{{ promotional.ptitle }}</h2>
+        <div>
+          <el-button v-if="isNowUser" type="primary" @click="editPromotional">修改</el-button>
+          <el-button v-if="isNowUser" type="danger" @click="deletePromotional">删除</el-button>
+        </div>
+      </div>
+      <p>地址: {{ getTownLabel(promotional.townID) }}</p>
+      <p>宣传类型: {{ getTypeLabel(promotional.ptypeId) }}</p>
       <p>描述: {{ promotional.pdesc }}</p>
       <p>图片列表:</p>
       <el-image
@@ -14,11 +21,6 @@
         style="width: 100px; height: 100px; margin-right: 10px"
       ></el-image>
       <p>视频链接: <a :href="promotional.videourl" target="_blank">{{ promotional.videourl }}</a></p>
-      <p>乡镇: {{ getTownLabel(promotional.townID) }}</p>
-      <div v-if="isNowUser">
-        <el-button type="primary" @click="editPromotional">修改</el-button>
-        <el-button type="danger" @click="deletePromotional">删除</el-button>
-      </div>
     </el-card>
   </div>
 </template>
@@ -39,7 +41,7 @@ export default {
     };
   },
   created() {
-    this.loadInitialData()
+    this.loadInitialData();
   },
   computed: {
     imageList() {
@@ -57,6 +59,7 @@ export default {
           ])
           .then(() => {
             console.log('数据加载成功');
+            this.checkSameUser();
           })
           .catch(error => {
             console.error('数据加载失败:', error);
@@ -130,11 +133,52 @@ export default {
       }
       return townId;
     },
+    async checkSameUser() {
+      try {
+        const token = localStorage.getItem('token') 
+        const response = await this.$axios.get('http://localhost:8080/user/checkSameUser', {
+          params: { userId: this.promotional.puserid },
+          headers: { 'token': token }
+        });
+        if (response.data.code === 200) {
+          this.isNowUser = true;
+        } else {
+          this.isNowUser = false;
+        }
+      } catch (error) {
+        console.error('用户验证失败:', error);
+        this.isNowUser = false;
+      }
+    },
     editPromotional() {
-      // 编辑逻辑
+      this.$router.push({ path: `/editPromotional/${this.promotional.pid}` });
     },
     deletePromotional() {
-      // 删除逻辑
+      this.$confirm('确定要删除吗?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        const token = localStorage.getItem('token');
+        this.$axios.delete(`http://localhost:8080/publicize/delete/${this.promotional.pid}`, {
+          headers: { 'token': token },
+          params: { userId: this.promotional.puserid}
+        })
+          .then(response => {
+            if (response.data.code === 200) {
+              this.$message.success('删除成功');
+              this.$router.push('/town-promotional-list');
+            } else {
+              this.$message.error(response.data.message || '删除失败');
+            }
+          })
+          .catch(error => {
+            this.$message.error('请求失败');
+            console.error(error);
+          });
+      }).catch(() => {
+        // 取消删除
+      });
     }
   }
 };

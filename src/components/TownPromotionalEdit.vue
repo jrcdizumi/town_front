@@ -1,0 +1,271 @@
+<template>
+    <div class="form-container">
+      <el-form :model="form" ref="form" label-width="120px">
+
+          <!-- 三级级联选择器：省份、城市、乡镇 -->
+          <el-form-item label="乡镇">
+            <el-cascader :options="provinces" placeholder="请选择省份/城市/乡镇" v-model="this.address" clearable
+            :props="{
+            expandTrigger: 'hover',
+            children: 'children',
+            emitPath: true, // 设置为false，只返回最后一级的标签
+            showAllLevels: true ,
+            value: 'label'
+            }"
+            ></el-cascader>
+        </el-form-item>
+        
+    
+        <el-form-item label="宣传类型">
+          <el-select v-model="ptypeId" placeholder="请选择宣传类型">
+            <el-option
+              v-for="type in promotionTypes"
+              :key="type.value"
+              :label="type.label"
+              :value="type.value"
+            ></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="宣传主题名称">
+          <el-input v-model="ptitle"></el-input>
+        </el-form-item>
+        <el-form-item label="宣传描述">
+          <el-input v-model="pdesc" type="textarea"></el-input>
+        </el-form-item>
+        <el-form-item label="图片">
+            <el-upload
+            class="upload-demo"
+            :before-upload="beforeUpload"
+            :on-preview="handlePreview"
+            :on-remove="handleRemove"
+            :file-list="imageList"
+            list-type="picture"
+            :http-request="customHttpRequest">
+            <el-button size="small" type="primary">点击上传</el-button>
+            <template v-slot:tip>
+              <div class="el-upload__tip">只能上传jpg/png文件，且不超过1MB</div>
+            </template>
+            </el-upload>
+        </el-form-item>
+        
+        <!-- 预览弹窗 -->
+        <el-dialog v-model="isPreviewVisible" width="50%">
+          <template #title>
+            <span>图片预览</span>
+          </template>
+          <img :src="previewUrl" alt="预览图片" style="width: 100%;">
+          <template #footer>
+            <span class="dialog-footer">
+              <el-button @click="isPreviewVisible = false">关闭</el-button>
+            </span>
+          </template>
+        </el-dialog>
+
+        <p class="upload-intro">上传视频介绍</p>
+        <el-upload
+            class="upload-demo"
+            drag
+            multiple
+            list-type="text"
+            :http-request="customVideoHttpRequest"
+            limit=1
+            :on-exceed="handleExceedLimit"
+            :file-list="videoList"
+        >
+            <i class="el-icon-upload"></i>
+            <div class="el-upload__text">将视频拖到此处，或<em>点击上传</em></div>
+        </el-upload>
+        <el-form-item style="text-align: center;">
+            <el-button type="primary" @click="submitEdit">提交</el-button>
+        </el-form-item>
+      </el-form>
+    </div>
+  </template>
+
+<script>
+export default {
+  data() {
+    return {
+      pid: '',
+      ptitle: '',
+      townID: '',
+      ptypeId: '',
+      pdesc: '',
+      pfileList: '',
+      videourl: '',
+      puserid: '',
+      promotionTypes: [], 
+      provinces: [],
+      fileList: [],
+      address: [],
+      imageList: [], // 新增：存储图片文件��表
+      videoList: [], // 新增：存储视频文件列表
+      isPreviewVisible: false, // 修改：初始为 false，控制预览弹窗的显示
+      previewUrl: '',          // ��增：存储预览图片的URL
+    };
+  },
+  created() {
+    this.initializeData();
+  },
+  methods: {
+    async initializeData() {
+      const id = this.$route.params.pid;
+      try {
+        const detailResponse = await this.$axios.get('http://localhost:8080/publicize/detail', {
+          params: { id }
+        });
+        if (detailResponse.data.code === 200) {
+          const data = detailResponse.data.data;
+          this.pid = data.pid;
+          this.ptitle = data.ptitle;
+          this.ptypeId = data.ptypeId;
+          this.puserid = data.puserid;
+          this.townID = data.townID;
+          this.pdesc = data.pdesc;
+          this.pfileList = data.pfileList;
+          this.videourl = data.videourl;
+          console.log("townID", this.townID);
+
+          // 解析并设置 imageList
+          if (this.pfileList) {
+            this.imageList = this.pfileList.split(',').map((url, index) => ({
+              name: `image_${index + 1}.jpg`, // 根据实际情况调整文件名
+              url: url.trim(),
+              status: 'success',
+            }));
+          }
+
+          // 解析并设置 videoList
+          if (this.videourl) {
+            this.videoList = [{
+              name: 'video.mp4', // 根据实际情况调整文件名
+              url: this.videourl,
+              status: 'success',
+            }];
+          }
+        } else {
+          this.$message.error('获取详情失败');
+        }
+
+        const townsResponse = await this.$axios.get('http://localhost:8080/publicize/getTownList');
+        if (townsResponse.data.code === 200) {
+            this.provinces = JSON.parse(townsResponse.data.data);
+            console.log(this.provinces);
+            //通过townID查询地址赋值给address
+            this.address = this.findTownPath(this.provinces, this.townID);
+            console.log("address", this.address);
+        } else {
+          this.$message.error('获取乡镇信息失败');
+        }
+
+        const typesResponse = await this.$axios.get('http://localhost:8080/publicize/getTypeList');
+        if (typesResponse.data.code === 200) {
+          const typesData = typesResponse.data.data;
+          this.promotionTypes = Object.keys(typesData).map(key => ({
+            label: key,
+            value: typesData[key],
+          }));
+        } else {
+          this.$message.error('获取宣传类型失败');
+        }
+      } catch (error) {
+        console.error('初始化数据失败:', error);
+        this.$message.error('初始化数据失败');
+      }
+    },
+    findTownPath(provinces, targetTownID) {
+      for (const province of provinces) {
+        for (const city of province.children) {
+          for (const town of city.children) {
+            console.log("town",town);
+            if (town.value == targetTownID) {
+              console.log("命中");  
+              return [province.label, city.label, town.label];
+            }
+          }
+        }
+      }
+      return [];
+    },
+    findTownID(provinces, address) {
+      console.log("address",address);
+      if (address.length !== 3) return null;
+      const [provinceLabel, cityLabel, townLabel] = address;
+      for (const province of provinces) {
+        console.log("province",province);
+        if (province.label === provinceLabel) {
+          for (const city of province.children) {
+            console.log("city",city);
+            if (city.label == cityLabel) {
+              for (const town of city.children) {
+                console.log("town",town);
+                if (town.label == townLabel) {
+                  return town.value;
+                }
+              }
+            }
+          }
+        }
+      }
+      return null;
+    },
+    async submitEdit() {
+      try {
+        const token = localStorage.getItem('token');
+        // 通过address查找对应的townID
+        const newTownID = this.findTownID(this.provinces, this.address);
+        if (!newTownID) {
+          this.$message.error('请选择有效的乡镇地址');
+          return;
+        }
+        this.townID = newTownID;
+
+        // 处理 imageList 和 videoList
+        const imageUrls = this.imageList.map(item => item.url).join(',');
+        const videoUrl = this.videoList.length > 0 ? this.videoList[0].url : '';
+
+        const payload = {
+          ptitle: this.ptitle,
+          pdesc: this.pdesc,
+          pfileList: imageUrls,
+          pstate: 0, // 状态设为已发布
+          ptypeId: this.ptypeId,
+          videourl: videoUrl, // 添加视频链接参数
+          townID: this.townID,
+        };
+        console.log("提交的数据为：", payload);
+        const response = await this.$axios.put('http://localhost:8080/publicize/update', payload, {
+          headers: { 'token': token }
+        });
+        if (response.data.code === 200) {
+          this.$message.success('修改成功');
+          this.$router.push(`/detail/${this.pid}`);
+        } else {
+          this.$message.error(response.data.message || '修改失败');
+        }
+      } catch (error) {
+        console.error('修改失败:', error);
+        this.$message.error('修改请求失败');
+      }
+    },
+    cancel() {
+      this.$router.push(`/detail/${this.pid}`);
+    },
+    /**
+     * 处理预览事件
+     * @param {Object} file - 被预览的文件对象
+     */
+    handlePreview(file) {
+      console.log("handlePreview",file);
+      this.previewUrl = file.url;
+      this.isPreviewVisible = true;
+    },
+  }
+};
+</script>
+
+<style scoped>
+.edit-container {
+  padding: 20px;
+}
+</style>

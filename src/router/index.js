@@ -3,6 +3,7 @@ import Login from '@/views/Login.vue';
 import AddPublicize from '@/components/AddPublicize.vue';
 import Register from '@/views/Register.vue';
 import UserInfo from '@/views/UserInfo.vue';
+import TownPromotionalEdit from '@/components/TownPromotionalEdit.vue';
 // ...existing code...
 
 const routes = [
@@ -44,6 +45,11 @@ const routes = [
     path: '/town-promotional-detail/:id',
     name: 'TownPromotionalDetail',
     component: () => import('@/components/TownPromotionalDetail.vue')
+  },
+  {
+    path: '/editPromotional/:pid',
+    name: 'TownPromotionalEdit',
+    component: TownPromotionalEdit
   }
 ];
 
