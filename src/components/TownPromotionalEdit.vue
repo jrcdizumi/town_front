@@ -232,14 +232,22 @@ export default {
           ptypeId: this.ptypeId,
           videourl: videoUrl, // 添加视频链接参数
           townID: this.townID,
+          puserid: this.puserid,
+          pid:this.pid
         };
         console.log("提交的数据为：", payload);
-        const response = await this.$axios.put('http://localhost:8080/publicize/update', payload, {
+        
+        const wrappedPayload = {
+          data: payload
+        };
+        
+        const response = await this.$axios.put('http://localhost:8080/publicize/update', wrappedPayload, {
           headers: { 'token': token }
         });
+        
         if (response.data.code === 200) {
           this.$message.success('修改成功');
-          this.$router.push(`/detail/${this.pid}`);
+          this.$router.push(`/town-promotional-detail/${this.pid}`);
         } else {
           this.$message.error(response.data.message || '修改失败');
         }
