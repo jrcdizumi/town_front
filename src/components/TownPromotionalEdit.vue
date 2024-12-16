@@ -212,6 +212,21 @@ export default {
     },
     async submitEdit() {
       try {
+        // 添加确认对话框
+        const confirmResult = await this.$confirm(
+          '确定要提交修改吗？',
+          '提示',
+          {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }
+        );
+
+        if (confirmResult !== 'confirm') {
+          return;
+        }
+
         const token = localStorage.getItem('token');
         // 通过address查找对应的townID
         const newTownID = this.findTownID(this.provinces, this.address);
@@ -253,6 +268,13 @@ export default {
           this.$message.error(response.data.message || '修改失败');
         }
       } catch (error) {
+        if (error === 'cancel') {
+          this.$message({
+            type: 'info',
+            message: '已取消修改'
+          });
+          return;
+        }
         console.error('修改失败:', error);
         this.$message.error('修改请求失败');
       }
