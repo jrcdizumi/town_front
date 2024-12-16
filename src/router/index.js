@@ -50,6 +50,16 @@ const routes = [
     path: '/editPromotional/:pid',
     name: 'TownPromotionalEdit',
     component: TownPromotionalEdit
+  },
+  {
+    path: '/editSupport/:id',
+    name: 'TownSupportEdit',
+    component: () => import('@/components/TownSupportEdit.vue')
+  },
+  {
+    path: '/town-support-detail/:id',
+    name: 'TownSupportDetail',
+    component: () => import('@/components/TownSupportDetail.vue')
   }
 ];
 
