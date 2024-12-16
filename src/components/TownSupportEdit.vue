@@ -56,10 +56,6 @@
         <div class="el-upload__text">将视频拖到此处，或<em>点击上传</em></div>
       </el-upload>
 
-      <el-form-item label="关联宣传ID">
-        <el-input v-model="pid" disabled></el-input>
-      </el-form-item>
-
       <el-form-item style="text-align: center;">
         <el-button type="primary" @click="submitEdit">提交</el-button>
       </el-form-item>
@@ -68,6 +64,8 @@
 </template>
 
 <script>
+import router from '@/router';
+
 export default {
   data() {
     return {
@@ -91,11 +89,9 @@ export default {
   },
   methods: {
     async initializeData() {
-      const id = this.$route.params.sid;
+      const id = this.$route.params.id;
       try {
-        const detailResponse = await this.$axios.get('http://localhost:8080/support/detail', {
-          params: { id },
-        });
+        const detailResponse = await this.$axios.get(`http://localhost:8080/support/detail/${id}`);
         if (detailResponse.data.code === 200) {
           const data = detailResponse.data.data;
           this.sid = data.sid;
@@ -123,15 +119,18 @@ export default {
               status: 'success',
             }];
           }
-
+          
           // 获取关联的宣传标题
           this.getPromotionTitle();
         } else {
+          this.$message.error(detailResponse.data.message);
           this.$message.error('获取详情失败');
+          router.back();
         }
       } catch (error) {
         console.error('初始化数据失败:', error);
         this.$message.error('初始化数据失败');
+        router.back();
       }
     },
     async getPromotionTitle() {

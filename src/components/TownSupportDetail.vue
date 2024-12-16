@@ -47,6 +47,11 @@
         promotionTitle: '', // 关联的宣传标题
       };
     },
+    computed: {
+      imageList() {
+        return this.support.sfileList ? this.support.sfileList.split(',') : [];
+      }
+    },
     created() {
       this.loadInitialData();
     },

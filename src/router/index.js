@@ -60,6 +60,11 @@ const routes = [
     path: '/town-support-detail/:id',
     name: 'TownSupportDetail',
     component: () => import('@/components/TownSupportDetail.vue')
+  },
+  {
+    path: '/addSupport/:pid',
+    name: 'AddSupport',
+    component: () => import('@/components/AddSupport.vue')
   }
 ];
 

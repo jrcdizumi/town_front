@@ -6,6 +6,7 @@
         <div>
           <el-button v-if="isNowUser" type="primary" @click="editPromotional">修改</el-button>
           <el-button v-if="isNowUser" type="danger" @click="deletePromotional">删除</el-button>
+          <el-button v-if="isLoggedIn" type="success" @click="addSupport">添加助力</el-button>
         </div>
       </div>
       <p>地址: {{ getTownLabel(promotional.townID) }}</p>
@@ -33,10 +34,25 @@
       </video> 
     </el-card>
   </div>
+
+  <!-- 显示关联的支持信息 -->
+  <div class="associated-supports">
+    <h3>关联的支持信息</h3>
+    <el-table :data="supportsList" style="width: 100%">
+      <el-table-column prop="stitle" label="支持主题名称" width="180"></el-table-column>
+      <el-table-column prop="sdesc" label="支持描述"></el-table-column>
+      <el-table-column label="操作" width="150">
+        <template #default="scope">
+          <el-button type="primary" size="small" @click="navigateToSupportDetail(scope.row.sid)">查看详情</el-button>
+        </template>
+      </el-table-column>
+    </el-table>
+  </div>
 </template>
 
 <script>
 import VideoPlayer from 'vue-video-player' // 确保导入视频播放器组件
+import { checkToken } from '../utils/tokenUtils' // 导入 checkToken 方法
 
 export default {
   components: {
@@ -52,11 +68,14 @@ export default {
       ],
       provinces: [], // 初始化为空数组，后续通过接口获取数据
       isNowUser: false,
+      isLoggedIn: false, // 添加 isLoggedIn 状态
       towns: [],
+      supportsList: [], // 添加支持列表数据属性
     };
   },
   created() {
     this.loadInitialData();
+    this.verifyLoginStatus(); // 初始化登录状态
   },
   computed: {
     imageList() {
@@ -71,6 +90,7 @@ export default {
           this.getDetail(),
             this.fetchTowns(), // 调用获取乡镇信息的函数
             this.fetchPromotionTypes(),
+            this.getSupportsList(), // 调用获取支持列表的方法
           ])
           .then(() => {
             console.log('数据加载成功');
@@ -165,6 +185,30 @@ export default {
         this.isNowUser = false;
       }
     },
+    verifyLoginStatus() { // 新增方法以验证登录状态
+      checkToken(this.$router).then(valid => {
+        this.isLoggedIn = valid;
+      }).catch(() => {
+        this.isLoggedIn = false;
+      });
+    },
+    async getSupportsList() {
+      try {        
+        const { data } = await this.$axios.get(`http://localhost:8080/support/list/${this.$route.params.id}`);
+
+        if (data.code === 200) {
+          this.supportsList = data.data;
+        } else {
+          this.$message.error('未能获取关联的支持信息');
+        }
+      } catch (error) {
+        console.error('获取支持列表失败:', error);
+        this.$message.error('获取支持列表失败');
+      }
+    },
+    navigateToSupportDetail(sid) {
+      this.$router.push({ path: `/town-support-detail/${sid}` });
+    },
     editPromotional() {
       this.$router.push({ path: `/editPromotional/${this.promotional.pid}` });
     },
@@ -194,6 +238,9 @@ export default {
       }).catch(() => {
         // 取消删除
       });
+    },
+    addSupport() {
+      this.$router.push({ path: `/addsupport/${this.promotional.pid}` });
     }
   }
 };
@@ -221,5 +268,11 @@ export default {
   width: 100%;
   height: auto;
   margin-bottom: 10px;
+}
+.associated-supports {
+  margin-top: 40px;
+}
+.associated-supports h3 {
+  margin-bottom: 20px;
 }
 </style>
