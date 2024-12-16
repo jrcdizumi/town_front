@@ -2,12 +2,21 @@
   <div class="form-container">
     <el-form :model="form" ref="form" label-width="120px">
 
-      <!-- 移除级联选择器和扶持类型选择器 -->
+      <!-- 移除级联选择器和助力类型选择器 -->
       
-      <el-form-item label="扶持主题名称">
+      <el-form-item label="助力主题名称">
         <el-input v-model="stitle"></el-input>
       </el-form-item>
-      <el-form-item label="扶持描述">
+
+      <el-form-item label="关联宣传">
+        <el-input v-model="promotionTitle" disabled>
+          <template #append>
+            <el-link type="primary" @click="navigateToPromotion">查看详情</el-link>
+          </template>
+        </el-input>
+      </el-form-item>
+
+      <el-form-item label="助力描述">
         <el-input v-model="sdesc" type="textarea"></el-input>
       </el-form-item>
 
@@ -73,6 +82,7 @@ export default {
       videoList: [],
       isPreviewVisible: false,
       previewUrl: '',
+      promotionTitle: '', // 添加宣传标题属性
       // 移除 provinces, supportTypes, address 相关数据
     };
   },
@@ -113,6 +123,9 @@ export default {
               status: 'success',
             }];
           }
+
+          // 获取关联的宣传标题
+          this.getPromotionTitle();
         } else {
           this.$message.error('获取详情失败');
         }
@@ -120,6 +133,24 @@ export default {
         console.error('初始化数据失败:', error);
         this.$message.error('初始化数据失败');
       }
+    },
+    async getPromotionTitle() {
+      try {
+        const { data } = await this.$axios.get('http://localhost:8080/publicize/detail', {
+          params: { id: this.pid },
+        });
+        if (data.code === 200) {
+          this.promotionTitle = data.data.ptitle;
+        } else {
+          this.promotionTitle = '未找到对应的宣传信息';
+        }
+      } catch (error) {
+        console.error('获取宣传标题失败:', error);
+        this.promotionTitle = '获取宣传标题失败';
+      }
+    },
+    navigateToPromotion() {
+      this.$router.push({ path: `/town-promotional-detail/${this.pid}` });
     },
     // 移除 findTownPath 和 findTownID 方法
     async submitEdit() {
