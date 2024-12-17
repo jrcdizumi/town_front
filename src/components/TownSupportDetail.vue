@@ -1,15 +1,22 @@
 <template>
     <div class="detail-container">
       <el-card>
-        <div class="header" style="display: flex; justify-content: space-between;">
-          <h2>{{ support.stitle }}</h2>
+        <div class="header" style="display: flex; justify-content: space-between; align-items: center;">
+          <div class="title-status">
+            <h2 style="display: inline-block; margin-right: 15px;">{{ support.stitle }}</h2>
+            <el-tag :type="getStatusType(support.supportState)">
+              {{ getStatusText(support.supportState) }}
+            </el-tag>
+          </div>
           <p v-if="promotionTitle">
-            关联的宣传标题:
+            关联的宣传:
             <el-link type="primary" @click="navigateToPromotion">{{ promotionTitle }}</el-link>
           </p>
           <div>
-            <el-button v-if="isNowUser" type="primary" @click="editSupport">修改</el-button>
-            <el-button v-if="isNowUser" type="danger" @click="deleteSupport">删除</el-button>
+            <el-button v-if="isNowUser && support.supportState === 0" type="primary" @click="editSupport">修改</el-button>
+            <el-button v-if="isNowUser && support.supportState === 0" type="danger" @click="deleteSupport">删除</el-button>
+            <el-button v-if="canHandleSupport && support.supportState === 0" type="success" @click="handleSupport(1)">通过</el-button>
+            <el-button v-if="canHandleSupport && support.supportState === 0" type="warning" @click="handleSupport(2)">拒绝</el-button>
           </div>
         </div>
         <p>描述: {{ support.sdesc }}</p>
@@ -45,6 +52,7 @@
         support: {},       // 包含 TownSupport 类的所有属性
         isNowUser: false,
         promotionTitle: '', // 关联的宣传标题
+        canHandleSupport: false, // 是否可以处理支持
       };
     },
     computed: {
@@ -62,6 +70,7 @@
             console.log('数据加载成功');
             this.checkSameUser();
             this.getPromotionTitle();
+            this.checkPromotionUserMatch();
           })
           .catch((error) => {
             console.error('数据加载失败:', error);
@@ -112,6 +121,37 @@
           this.isNowUser = false;
         }
       },
+      async checkPromotionUserMatch() {
+        try {
+          const token = localStorage.getItem('token');
+          const { data } = await this.$axios.get('http://localhost:8080/support/checkPromotionUserMatch', {
+            params: { supportId: this.support.sid },
+            headers: { token },
+          });
+          this.canHandleSupport = data.code === 200;
+        } catch (error) {
+          console.error('检查用户匹配失败:', error);
+          this.canHandleSupport = false;
+        }
+      },
+      async handleSupport(action) {
+        try {
+          const token = localStorage.getItem('token');
+          const { data } = await this.$axios.post('http://localhost:8080/support/handle', null, {
+            params: { supportId: this.support.sid, action },
+            headers: { token },
+          });
+          if (data.code === 200) {
+            this.$message.success('操作成功');
+            this.getDetail(); // 重新获取详情以更新状态
+          } else {
+            this.$message.error(data.message || '操作失败');
+          }
+        } catch (error) {
+          console.error('操作失败:', error);
+          this.$message.error('请求失败');
+        }
+      },
       navigateToPromotion() {
         // 使用路由跳转到宣传详情页面，假设路由路径为 /town-promotional-detail/:id
         this.$router.push({ path: `/town-promotional-detail/${this.support.pid}` });
@@ -130,7 +170,6 @@
             this.$axios
               .delete(`http://localhost:8080/support/delete/${this.support.sid}`, {
                 headers: { token },
-                params: { userId: this.support.suserId },
               })
               .then((response) => {
                 if (response.data.code === 200) {
@@ -148,6 +187,22 @@
           .catch(() => {
             // 取消删除
           });
+      },
+      getStatusType(status) {
+        const types = {
+          0: 'info',    // 待审核
+          1: 'success', // 已通过
+          2: 'warning'  // 已拒绝
+        };
+        return types[status] || 'info';
+      },
+      getStatusText(status) {
+        const statusMap = {
+          0: '待审核',
+          1: '已通过',
+          2: '已拒绝'
+        };
+        return statusMap[status] || '未知状态';
       },
     },
   };
@@ -175,5 +230,9 @@
     width: 100%;
     height: auto;
     margin-bottom: 10px;
+  }
+  .title-status {
+    display: flex;
+    align-items: center;
   }
   </style>

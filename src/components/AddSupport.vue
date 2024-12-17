@@ -132,7 +132,7 @@ export default {
                 if (response.data.code === 200) {
                     this.$message.success('添加成功');
                     this.resetForm(); // 重置表单
-                    this.$router.push('/town-support-list');
+                    this.$router.back(); // 返回上一页
                 } else {
                     this.$message.error(response.data.message || '添加失败');
                 }

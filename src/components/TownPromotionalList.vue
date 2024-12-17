@@ -1,5 +1,6 @@
 <template>
   <div class="list-container">
+    <el-checkbox v-model="showMyPromotions" @change="filterPromotions">只显示我的宣传</el-checkbox>
     <el-table :data="paginatedList" style="width: 100%">
       <!-- <el-table-column prop="pid" label="ID" width="50"></el-table-column> -->
       <el-table-column prop="townID" label="乡镇">
@@ -43,7 +44,7 @@
       :current-page="currentPage"
       :page-size="pageSize"
       layout="total, sizes, prev, pager, next"
-      :total="promotionalList.length"
+      :total="filteredPromotionalList.length"
       :page-sizes="[5, 10, 20, 50]"
     ></el-pagination>
   </div>
@@ -167,14 +168,17 @@ export default {
         // ... 其他示例数据
       ],
       currentPage: 1,
-      pageSize: 5
+      pageSize: 5,
+      showMyPromotions: false, // 新增变量
+      filteredPromotionalList: [], // 新增变量
+      userId: null // 新增变量
     };
   },
   computed: {
     paginatedList() {
       const start = (this.currentPage - 1) * this.pageSize;
       const end = this.currentPage * this.pageSize;
-      return this.promotionalList.slice(start, end);
+      return this.filteredPromotionalList.slice(start, end);
     }
   },
   created() {
@@ -245,11 +249,39 @@ export default {
         .then(response => {
           if (response.data.code === 200) {
             this.promotionalList = JSON.parse(response.data.data);
+            this.filterPromotions(); // 调用过滤函数
             console.log('宣传列表:', this.promotionalList);
           } else {
             throw new Error(response.data.message || '获取宣传列表失败');
           }
         });
+    },
+    async checkSameUser(puserid) {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await this.$axios.get('http://localhost:8080/user/checkSameUser', {
+          params: { userId: puserid },
+          headers: { token }
+        });
+        return response.data.code === 200;
+      } catch (error) {
+        console.error('用户验证失败:', error);
+        return false;
+      }
+    },
+    async filterPromotions() {
+      if (this.showMyPromotions) {
+        const filteredList = [];
+        for (const promotion of this.promotionalList) {
+          const isSameUser = await this.checkSameUser(promotion.puserid);
+          if (isSameUser) {
+            filteredList.push(promotion);
+          }
+        }
+        this.filteredPromotionalList = filteredList;
+      } else {
+        this.filteredPromotionalList = this.promotionalList;
+      }
     },
     getTownName(townID) {
       console.log('查找 townID:', townID);

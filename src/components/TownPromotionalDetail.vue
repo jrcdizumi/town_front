@@ -37,10 +37,28 @@
 
   <!-- 显示关联的支持信息 -->
   <div class="associated-supports">
-    <h3>关联的支持信息</h3>
+    <h3>关联的助力信息</h3>
     <el-table :data="supportsList" style="width: 100%">
-      <el-table-column prop="stitle" label="支持主题名称" width="180"></el-table-column>
-      <el-table-column prop="sdesc" label="支持描述"></el-table-column>
+      <el-table-column prop="stitle" label="助力主题名称" width="180"></el-table-column>
+      <el-table-column label="状态" width="100">
+        <template #default="scope">
+          <el-tag :type="getStatusType(scope.row.supportState)">
+            {{ getStatusText(scope.row.supportState) }}
+          </el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column label="图片" width="120">
+        <template #default="scope">
+          <el-image
+            v-if="getFirstImage(scope.row.sfileList)"
+            :src="getFirstImage(scope.row.sfileList)"
+            :preview-src-list="[getFirstImage(scope.row.sfileList)]"
+            style="width: 100px; height: 100px; object-fit: cover;"
+          ></el-image>
+          <span v-else>无图片</span>
+        </template>
+      </el-table-column>
+      <el-table-column prop="sdesc" label="助力描述"></el-table-column>
       <el-table-column label="操作" width="150">
         <template #default="scope">
           <el-button type="primary" size="small" @click="navigateToSupportDetail(scope.row.sid)">查看详情</el-button>
@@ -194,8 +212,10 @@ export default {
     },
     async getSupportsList() {
       try {        
-        const { data } = await this.$axios.get(`http://localhost:8080/support/list/${this.$route.params.id}`);
-
+        const token = localStorage.getItem('token')
+        const { data } = await this.$axios.get(`http://localhost:8080/support/list/${this.$route.params.id}`,{
+          headers: { token },
+        });
         if (data.code === 200) {
           this.supportsList = data.data;
         } else {
@@ -241,7 +261,28 @@ export default {
     },
     addSupport() {
       this.$router.push({ path: `/addsupport/${this.promotional.pid}` });
-    }
+    },
+    getFirstImage(fileList) {
+      if (!fileList) return '';
+      const images = fileList.split(',');
+      return images[0] || '';
+    },
+    getStatusType(status) {
+      const types = {
+        0: 'info',    // 待审核
+        1: 'success', // 已通过
+        2: 'warning'  // 已拒绝
+      };
+      return types[status] || 'info';
+    },
+    getStatusText(status) {
+      const statusMap = {
+        0: '待审核',
+        1: '已通过',
+        2: '已拒绝'
+      };
+      return statusMap[status] || '未知状态';
+    },
   }
 };
 </script>
