@@ -7,6 +7,7 @@
             <el-tag :type="getStatusType(support.supportState)">
               {{ getStatusText(support.supportState) }}
             </el-tag>
+            <p>上传者: {{ userName }}</p>  <!-- 添加显示用户名 -->
           </div>
           <p v-if="promotionTitle">
             关联的宣传:
@@ -53,6 +54,7 @@
         isNowUser: false,
         promotionTitle: '', // 关联的宣传标题
         canHandleSupport: false, // 是否可以处理支持
+        userName: '',  // 添加用于存储用户名
       };
     },
     computed: {
@@ -99,6 +101,8 @@
           const { data } = await this.$axios.get(`http://localhost:8080/support/detail/${id}`);
           if (data.code === 200) {
             this.support = data.data;  // 直接赋值获取的支持详情
+            // 调用 getUserName 方法获取用户名
+            await this.getUserName(this.support.suserId);
           } else if (data.code === 400) {
             this.$message.error('数据不存在');
             this.support = {};
@@ -106,6 +110,22 @@
         } catch (error) {
           this.$message.error('请求失败');
           this.support = {};
+        }
+      },
+      async getUserName(userId) {
+        if (userId==null) return;
+        try {
+          const { data } = await this.$axios.get('http://localhost:8080/user/getUserName', {
+            params: { userId },
+          });
+          if (data.code === 200) {
+            this.userName = data.data;
+          } else {
+            this.userName = '未知用户';
+          }
+        } catch (error) {
+          console.error('获取用户名失败:', error);
+          this.userName = '未知用户';
         }
       },
       async checkSameUser() {

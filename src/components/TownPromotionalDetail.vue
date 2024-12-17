@@ -9,6 +9,7 @@
           <el-button v-if="isLoggedIn" type="success" @click="addSupport">添加助力</el-button>
         </div>
       </div>
+      <p>上传者: {{ userName }}</p> <!-- 添加显示用户名 -->
       <p>地址: {{ getTownLabel(promotional.townID) }}</p>
       <p>宣传类型: {{ getTypeLabel(promotional.ptypeId) }}</p>
       <p>描述: {{ promotional.pdesc }}</p>
@@ -89,6 +90,7 @@ export default {
       isLoggedIn: false, // 添加 isLoggedIn 状态
       towns: [],
       supportsList: [], // 添加支持列表数据属性
+      userName: '',  // 添加用于存储用户名
     };
   },
   created() {
@@ -158,6 +160,8 @@ export default {
         });
         if (data.code === 200) {
           this.promotional = data.data;
+          // 调用 getUserName 方法获取用户名
+          await this.getUserName(this.promotional.puserid);
         } else if (data.code === 400) {
           this.$message.error('数据不存在');
           this.promotional = {};
@@ -165,6 +169,24 @@ export default {
       } catch (error) {
         this.$message.error('请求失败');
         this.promotional = {};
+      }
+    },
+    async getUserName(userId) {
+      if (userId==null) {
+        return;
+      } 
+      try {
+        const { data } = await this.$axios.get('http://localhost:8080/user/getUserName', {
+          params: { userId },
+        });
+        if (data.code === 200) {
+          this.userName = data.data;
+        } else {
+          this.userName = '未知用户';
+        }
+      } catch (error) {
+        console.error('获取用户名失败:', error);
+        this.userName = '未知用户';
       }
     },
     getTypeLabel(typeId) {
