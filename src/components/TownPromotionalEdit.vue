@@ -72,6 +72,7 @@
             :on-exceed="handleExceedLimit"
             :file-list="videoList"
             :before-upload="beforeVideoUpload"
+            :on-remove="handleVideoRemove"
         >
             <i class="el-icon-upload"></i>
             <div class="el-upload__text">将视频拖到此处，或<em>点击上传</em></div>
@@ -348,6 +349,10 @@ export default {
         this.imageList.splice(removedFileIndex, 1);
         this.$message.success('已删除图片');
       }
+    },
+    handleVideoRemove(file) {
+      this.videoList = [];
+      this.$message.success('已删除视频');
     },
   }
 };
