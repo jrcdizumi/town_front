@@ -1,6 +1,8 @@
 <template>
   <div class="list-container">
-    <el-checkbox v-model="showMyPromotions" @change="filterPromotions">只显示我的宣传</el-checkbox>
+    <div class="filter-container">
+      <el-checkbox v-model="showMyPromotions" @change="filterPromotions">只显示我的宣传</el-checkbox>
+    </div>
     <el-table :data="paginatedList" style="width: 100%">
       <!-- <el-table-column prop="pid" label="ID" width="50"></el-table-column> -->
       <el-table-column prop="townID" label="乡镇">
@@ -9,6 +11,25 @@
         </template>
       </el-table-column>
       <el-table-column prop="ptypeId" label="宣传类型">
+        <template #header>
+          <div style="display: flex; align-items: center;">
+            <span>宣传类型</span>
+            <el-select 
+              v-model="selectedType" 
+              size="small" 
+              placeholder="选择类型"
+              clearable
+              style="margin-left: 10px; width: 120px;"
+              @change="filterPromotions">
+              <el-option
+                v-for="type in promotionTypes"
+                :key="type.value"
+                :label="type.label"
+                :value="type.value">
+              </el-option>
+            </el-select>
+          </div>
+        </template>
         <template v-slot="scope">
           <span>{{ getPromotionTypeName(scope.row.ptypeId) }}</span>
         </template>
@@ -60,118 +81,13 @@ export default {
         { value: 'type3', label: '类型3' },
         ],
         provinces: [], // 初始化为空数组，后续通过接口获取数据
-      promotionalList: [
-        {
-          pid: 7,
-          ptitle: 'test3',
-          ptypeId: 2,
-          puserid: 4,
-          townID: 2,
-          pdesc: 'test3',
-          pfileList: 'https://sky-take-out-1317682162.cos.ap-beijing.myqcloud.com/goodtown/b989aba8-5ce5-4f26-82d8-3822200742ab.png,https://sky-take-out-1317682162.cos.ap-beijing.myqcloud.com/goodtown/b989aba8-5ce5-4f26-82d8-3822200742ab.png,https://sky-take-out-1317682162.cos.ap-beijing.myqcloud.com/goodtown/b989aba8-5ce5-4f26-82d8-3822200742ab.png',
-          pbegindate: '2024-12-08 17:26:11',
-          pstate: 0,
-          pupdatedate: '2024-12-08 17:26:11',
-          videourl: ''
-        },
-        {
-          pid: 6,
-          ptitle: 'test3',
-          ptypeId: 3,
-          puserid: 4,
-          townID: 1,
-          pdesc: 'test3',
-          pfileList: 'https://sky-take-out-1317682162.cos.ap-beijing.myqcloud.com/goodtown/b989aba8-5ce5-4f26-82d8-3822200742ab.png,https://sky-take-out-1317682162.cos.ap-beijing.myqcloud.com/goodtown/b989aba8-5ce5-4f26-82d8-3822200742ab.png',
-          pbegindate: '2024-12-08 17:26:11',
-          pstate: 0,
-          pupdatedate: '2024-12-08 17:26:11',
-          videourl: ''
-        },
-        {
-          pid: 7,
-          ptitle: 'test3',
-          ptypeId: 0,
-          puserid: 4,
-          townID: 0,
-          pdesc: 'test3',
-          pfileList: 'https://sky-take-out-1317682162.cos.ap-beijing.myqcloud.com/goodtown/b989aba8-5ce5-4f26-82d8-3822200742ab.png,https://sky-take-out-1317682162.cos.ap-beijing.myqcloud.com/goodtown/b989aba8-5ce5-4f26-82d8-3822200742ab.png,https://sky-take-out-1317682162.cos.ap-beijing.myqcloud.com/goodtown/b989aba8-5ce5-4f26-82d8-3822200742ab.png',
-          pbegindate: '2024-12-08 17:26:11',
-          pstate: 0,
-          pupdatedate: '2024-12-08 17:26:11',
-          videourl: ''
-        },
-        {
-          pid: 6,
-          ptitle: 'test3',
-          ptypeId: 3,
-          puserid: 4,
-          townID: 0,
-          pdesc: 'test3',
-          pfileList: 'https://sky-take-out-1317682162.cos.ap-beijing.myqcloud.com/goodtown/b989aba8-5ce5-4f26-82d8-3822200742ab.png,https://sky-take-out-1317682162.cos.ap-beijing.myqcloud.com/goodtown/b989aba8-5ce5-4f26-82d8-3822200742ab.png',
-          pbegindate: '2024-12-08 17:26:11',
-          pstate: 0,
-          pupdatedate: '2024-12-08 17:26:11',
-          videourl: ''
-        },
-        {
-          pid: 7,
-          ptitle: 'test3',
-          ptypeId: 3,
-          puserid: 4,
-          townID: 0,
-          pdesc: 'test3',
-          pfileList: 'https://sky-take-out-1317682162.cos.ap-beijing.myqcloud.com/goodtown/b989aba8-5ce5-4f26-82d8-3822200742ab.png,https://sky-take-out-1317682162.cos.ap-beijing.myqcloud.com/goodtown/b989aba8-5ce5-4f26-82d8-3822200742ab.png,https://sky-take-out-1317682162.cos.ap-beijing.myqcloud.com/goodtown/b989aba8-5ce5-4f26-82d8-3822200742ab.png',
-          pbegindate: '2024-12-08 17:26:11',
-          pstate: 0,
-          pupdatedate: '2024-12-08 17:26:11',
-          videourl: ''
-        },
-        {
-          pid: 6,
-          ptitle: 'test3',
-          ptypeId: 3,
-          puserid: 4,
-          townID: 0,
-          pdesc: 'test3',
-          pfileList: 'https://sky-take-out-1317682162.cos.ap-beijing.myqcloud.com/goodtown/b989aba8-5ce5-4f26-82d8-3822200742ab.png,https://sky-take-out-1317682162.cos.ap-beijing.myqcloud.com/goodtown/b989aba8-5ce5-4f26-82d8-3822200742ab.png',
-          pbegindate: '2024-12-08 17:26:11',
-          pstate: 0,
-          pupdatedate: '2024-12-08 17:26:11',
-          videourl: ''
-        },
-                {
-          pid: 7,
-          ptitle: 'test3',
-          ptypeId: 3,
-          puserid: 4,
-          townID: 0,
-          pdesc: 'test3',
-          pfileList: 'https://sky-take-out-1317682162.cos.ap-beijing.myqcloud.com/goodtown/b989aba8-5ce5-4f26-82d8-3822200742ab.png,https://sky-take-out-1317682162.cos.ap-beijing.myqcloud.com/goodtown/b989aba8-5ce5-4f26-82d8-3822200742ab.png,https://sky-take-out-1317682162.cos.ap-beijing.myqcloud.com/goodtown/b989aba8-5ce5-4f26-82d8-3822200742ab.png',
-          pbegindate: '2024-12-08 17:26:11',
-          pstate: 0,
-          pupdatedate: '2024-12-08 17:26:11',
-          videourl: ''
-        },
-        {
-          pid: 6,
-          ptitle: 'test3',
-          ptypeId: 3,
-          puserid: 4,
-          townID: 0,
-          pdesc: 'test3',
-          pfileList: 'https://sky-take-out-1317682162.cos.ap-beijing.myqcloud.com/goodtown/b989aba8-5ce5-4f26-82d8-3822200742ab.png,https://sky-take-out-1317682162.cos.ap-beijing.myqcloud.com/goodtown/b989aba8-5ce5-4f26-82d8-3822200742ab.png',
-          pbegindate: '2024-12-08 17:26:11',
-          pstate: 0,
-          pupdatedate: '2024-12-08 17:26:11',
-          videourl: ''
-        },
-        // ... 其他示例数据
-      ],
+      promotionalList: [],
       currentPage: 1,
       pageSize: 5,
       showMyPromotions: false, // 新增变量
       filteredPromotionalList: [], // 新增变量
-      userId: null // 新增变量
+      userId: null, // 新增变量
+      selectedType: '' // 新增：选中的宣传类型
     };
   },
   computed: {
@@ -270,17 +186,25 @@ export default {
       }
     },
     async filterPromotions() {
+      let filteredList = [...this.promotionalList];
+      
+      // 根据类型筛选
+      if (this.selectedType) {
+        filteredList = filteredList.filter(item => item.ptypeId === this.selectedType);
+      }
+
+      // 根据用户筛选
       if (this.showMyPromotions) {
-        const filteredList = [];
-        for (const promotion of this.promotionalList) {
+        const finalList = [];
+        for (const promotion of filteredList) {
           const isSameUser = await this.checkSameUser(promotion.puserid);
           if (isSameUser) {
-            filteredList.push(promotion);
+            finalList.push(promotion);
           }
         }
-        this.filteredPromotionalList = filteredList;
+        this.filteredPromotionalList = finalList;
       } else {
-        this.filteredPromotionalList = this.promotionalList;
+        this.filteredPromotionalList = filteredList;
       }
     },
     getTownName(townID) {
@@ -311,6 +235,12 @@ export default {
 <style scoped>
 .list-container {
   padding: 20px;
+}
+.filter-container {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 20px;
 }
 .image-preview {
   display: flex;
