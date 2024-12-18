@@ -32,14 +32,13 @@
             class="image-item"
           ></el-image>
         </div>
-        <video
+        <video id="myVideo" 
           v-if="support.videourl"
           :key="support.videourl"
           class="video-item"
           controls
           autoplay="false"
-          preload="auto"
-        >
+          preload="auto">
           <source :src="support.videourl" type="video/mp4" />
         </video>
       </el-card>
@@ -47,7 +46,13 @@
   </template>
   
   <script>
+import VideoPlayer from 'vue-video-player' // 确保导入视频播放器组件
+import { checkToken } from '../utils/tokenUtils' // 导入 checkToken 方法
+
   export default {
+    components: {
+      VideoPlayer // 注册视频播放器组件
+    },
     data() {
       return {
         support: {},       // 包含 TownSupport 类的所有属性
