@@ -272,6 +272,7 @@
     
             if (response.data.code === 200) {
               this.$message.success('提交成功');
+              this.$router.push('/'); // 提交成功后返回首页
             } else {
               this.$message.error(`提交失败: ${response.data.message || '未知错误'}`);
             }
