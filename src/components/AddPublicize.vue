@@ -180,10 +180,10 @@
             });
        },
        customVideoHttpRequest({onSuccess, onError, file}) {
-         const isVideo = file.type.startsWith('video/');
+         const isVideo = file.type.startsWith('video/mp4');
          const isValidSize = file.size <= 100 * 1024 * 1024; // 100MB
          if (!isVideo) {
-             this.$message.error('只能上传视频文件');
+             this.$message.error('只能上传mp4视频文件');
              onError('文件类型错误');
              return false;
          }
@@ -272,7 +272,6 @@
     
             if (response.data.code === 200) {
               this.$message.success('提交成功');
-              this.resetForm();
             } else {
               this.$message.error(`提交失败: ${response.data.message || '未知错误'}`);
             }

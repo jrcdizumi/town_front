@@ -280,6 +280,72 @@ export default {
         this.$message.error('修改请求失败');
       }
     },
+    async submitForm() {
+      try {
+        // 添加确认对话框
+        const confirmResult = await this.$confirm(
+          '确定要提交添加吗？',
+          '提示',
+          {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }
+        );
+
+        if (confirmResult !== 'confirm') {
+          return;
+        }
+
+        // 打印所有表单值
+        this.form.fileList = this.fileList;
+        this.form.townID = this.form.address[this.form.address.length - 1];
+        console.log('表单数据:', this.form);
+        
+        // 校验表单字段是否为空
+        if (!this.form.townID || !this.form.promotionType || !this.form.promotionTitle || !this.form.promotionDescription) {
+          this.$message.error('乡镇名、宣传类型、主题名称、描述均不能为空');
+          return;
+        }
+
+        // 构造提交数据
+        const submitData = {
+          ptitle: this.form.promotionTitle,
+          pdesc: this.form.promotionDescription,
+          pfileList: this.form.fileList.map(item => item.url).join(','),
+          pstate: 0,
+          ptypeId: this.form.promotionType,
+          videourl: this.form.videoUrl,
+          townID: this.form.townID
+        };
+        console.log('提交数据:', submitData);
+        
+        // 获取token并发送请求
+        const token = localStorage.getItem('token');
+        const response = await this.$axios.post('http://localhost:8080/publicize/submit', submitData, {
+          headers: {
+            token: `${token}`
+          }
+        });
+
+        if (response.data.code === 200) {
+          this.$message.success('提交成功');
+          this.resetForm();
+        } else {
+          this.$message.error(`提交失败: ${response.data.message || '未知错误'}`);
+        }
+      } catch (error) {
+        if (error === 'cancel') {
+          this.$message({
+            type: 'info',
+            message: '已取消添加'
+          });
+          return;
+        }
+        console.error('提交错误:', error);
+        this.$message.error('提交失败，请稍后再试');
+      }
+    },
     cancel() {
       this.$router.push(`/detail/${this.pid}`);
     },
