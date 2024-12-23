@@ -1,5 +1,5 @@
 <template>
-    <div class="login-container">
+    <div class="statistic-container">
       <el-form :model="loginForm" @submit.prevent="handleLogin">
         <el-form-item prop="username">
           <el-input v-model="loginForm.username" placeholder="用户名"></el-input>
@@ -8,7 +8,7 @@
           <el-input v-model="loginForm.password" placeholder="密码" type="password"></el-input>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="handleLogin">登录</el-button>
+          <el-button type="primary" @click="handleLogin">管理员登录</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -20,7 +20,7 @@
   import axios from 'axios'
   
   export default {
-    name: 'Login',
+    name: 'Statistic',
     data() {
       return {
         loginForm: {
@@ -32,14 +32,13 @@
     mounted() {
       const token = localStorage.getItem('token')
       if (token) {
-        this.$axios.get('http://localhost:8080/user/checkLogin', {
+        this.$axios.get('http://localhost:8080/user/checkstatistic', {
           headers: {
             'token': token
           }
         }).then(response => {
           const res = response.data
           if (res.code === 200) {
-          
             // 已登录，跳转到 home 界面
             this.$router.push('/')
           }
@@ -50,7 +49,7 @@
     },
     methods: {
       handleLogin() {
-        this.$axios.post('http://localhost:8080/user/login', {
+        this.$axios.post('http://localhost:8080/user/statistic', {
           uname: this.loginForm.username,
           bpwd: this.loginForm.password
         }).then(response => {
@@ -70,7 +69,7 @@
   </script>
   
   <style scoped>
-  .login-container {
+  .statistic-container {
     width: 300px;
     margin: 100px auto;
   }

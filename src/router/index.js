@@ -1,5 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import Login from '@/views/Login.vue';
+import AdminLogin from '@/views/AdminLogin.vue';
+import Statistic from '@/views/Statistic.vue';
 import AddPublicize from '@/components/AddPublicize.vue';
 import Register from '@/views/Register.vue';
 import UserInfo from '@/views/UserInfo.vue';
@@ -17,6 +19,16 @@ const routes = [
     path: '/login',
     name: 'Login',
     component: Login
+  },
+  {
+    path: '/adminlogin',
+    name: 'AdminLogin',
+    component: AdminLogin
+  },
+  {
+    path: '/statistic',
+    name: 'Statistic',
+    component: Statistic
   },
   {
     path: '/userinfo',
