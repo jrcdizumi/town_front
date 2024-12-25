@@ -73,12 +73,16 @@ export default {
     };
 
     const fetchStatistics = () => {
+      const token = localStorage.getItem('token');
       const townID = filterForm.value.address[filterForm.value.address.length - 1];
       axios.get('http://localhost:8080/admin/statistics', {
         params: {
           startDate: filterForm.value.startDate,
           endDate: filterForm.value.endDate,
           townID: townID
+        },
+        headers: {
+            'token': token
         }
       }).then(response => {
         if (response.data.code === 200) {
