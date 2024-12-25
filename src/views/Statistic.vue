@@ -1,6 +1,6 @@
 <template>
   <div class="statistic-container">
-    <el-form :model="filterForm" label-width="120px" @submit.prevent="fetchStatistics">
+    <el-form :model="filterForm" label-width="120px">
       <el-form-item label="起始年月">
         <el-date-picker
           v-model="filterForm.startDate"
@@ -29,7 +29,7 @@
         ></el-cascader>
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" @click="fetchStatistics">查询</el-button>
+        <el-button type="primary" @click="handleSearch">查询</el-button>
       </el-form-item>
     </el-form>
 
@@ -47,6 +47,7 @@
 import { ref, onMounted } from 'vue';
 import * as echarts from 'echarts';
 import axios from 'axios';
+import { ElMessage } from 'element-plus';
 
 export default {
   name: 'Statistic',
@@ -84,11 +85,23 @@ export default {
           statistics.value = response.data.data;
           renderChart();
         } else {
-          console.error('查询失败', response.data.message);
+          ElMessage.error(response.data.message || '查询失败');
         }
       }).catch(error => {
-        console.error('查询失败', error);
+        ElMessage.error('查询失败: ' + error.message);
       });
+    };
+
+    const handleSearch = () => {
+      if (!filterForm.value.startDate || !filterForm.value.endDate) {
+        ElMessage.warning('请选择起始和终止日期');
+        return;
+      }
+      if (!filterForm.value.address || filterForm.value.address.length === 0) {
+        ElMessage.warning('请选择乡镇');
+        return;
+      }
+      fetchStatistics();
     };
 
     const renderChart = () => {
@@ -139,7 +152,8 @@ export default {
       filterForm,
       provinces,
       statistics,
-      fetchStatistics
+      fetchStatistics,
+      handleSearch
     };
   }
 };
