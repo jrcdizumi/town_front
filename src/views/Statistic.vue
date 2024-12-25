@@ -82,7 +82,13 @@ export default {
         }
       }).then(response => {
         if (response.data.code === 200) {
-          statistics.value = response.data.data;
+          // 转换数据格式
+          const formattedData = response.data.data.map(item => ({
+            month: item.monthID,
+            promotionUsers: item.puserNum,
+            supportUsers: item.suserNum
+          }));
+          statistics.value = formattedData;
           renderChart();
         } else {
           ElMessage.error(response.data.message || '查询失败');
@@ -90,6 +96,7 @@ export default {
       }).catch(error => {
         ElMessage.error('查询失败: ' + error.message);
       });
+      
     };
 
     const handleSearch = () => {
