@@ -51,21 +51,22 @@
     methods: {
       handleLogin() {
         
-        this.$router.push('/statistic');
-        // this.$axios.post('http://localhost:8080/user/adminlogin', {
-        //   uname: this.loginForm.username,
-        //   bpwd: this.loginForm.password
-        // }).then(response => {
-        //   if (response.data.code === 200) {
-        //     ElMessage.success('success');
-        //     localStorage.setItem('token', response.data.data.token);
-        //     this.$router.push('/statistic');
-        //   } else {
-        //     ElMessage.error(response.data.message);
-        //   }
-        // }).catch(error => {
-        //   console.error(error);
-        // });
+        // this.$router.push('/statistic');
+        this.$axios.post('http://localhost:8080/admin/adminlogin', {
+          username: this.loginForm.username,
+          password: this.loginForm.password
+        }).then(response => {
+          if (response.data.code === 200) {
+            ElMessage.success('success');
+            localStorage.setItem('token', response.data.data.token);
+            localStorage.setItem('admin', this.loginForm.username);
+            this.$router.push('/statistic');
+          } else {
+            ElMessage.error(response.data.message);
+          }
+        }).catch(error => {
+          console.error(error);
+        });
       }
     }
   }

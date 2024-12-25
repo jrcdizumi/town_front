@@ -74,15 +74,25 @@ export default {
 
     const fetchStatistics = () => {
       const townID = filterForm.value.address[filterForm.value.address.length - 1];
+      // 将选择的日期往后延一个月
       axios.get('http://localhost:8080/admin/statistics', {
         params: {
           startDate: filterForm.value.startDate,
           endDate: filterForm.value.endDate,
           townID: townID
+        },
+        headers: {
+          'token': localStorage.getItem('token')
         }
       }).then(response => {
         if (response.data.code === 200) {
-          statistics.value = response.data.data;
+          // 转换数据格式
+          const formattedData = response.data.data.map(item => ({
+            month: item.monthID,
+            promotionUsers: item.puserNum,
+            supportUsers: item.suserNum
+          }));
+          statistics.value = formattedData;
           renderChart();
         } else {
           ElMessage.error(response.data.message || '查询失败');
@@ -90,6 +100,7 @@ export default {
       }).catch(error => {
         ElMessage.error('查询失败: ' + error.message);
       });
+      
     };
 
     const handleSearch = () => {
