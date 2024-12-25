@@ -7,6 +7,7 @@
           type="month"
           placeholder="选择起始年月"
           format="YYYY-MM"
+          value-format="YYYY-MM"
         ></el-date-picker>
       </el-form-item>
       <el-form-item label="终止年月">
@@ -15,10 +16,15 @@
           type="month"
           placeholder="选择终止年月"
           format="YYYY-MM"
+          value-format="YYYY-MM"
         ></el-date-picker>
       </el-form-item>
       <el-form-item label="乡镇">
-        <el-cascader :options="provinces" placeholder="请选择省份/城市/乡镇" v-model="filterForm.address" clearable
+        <el-cascader 
+          :options="provinces" 
+          placeholder="请选择省份/城市/乡镇" 
+          v-model="filterForm.address" 
+          clearable
           :props="{
             expandTrigger: 'hover',
             children: 'children',
@@ -69,6 +75,9 @@ export default {
           } else {
             throw new Error(response.data.message || '获取乡镇信息失败');
           }
+        })
+        .catch(error => {
+          ElMessage.error('获取乡镇列表失败: ' + error.message);
         });
     };
 
@@ -79,6 +88,9 @@ export default {
         return;
       }
       const townID = filterForm.value.address[filterForm.value.address.length - 1];
+      // 将选择的日期往后延一个月
+      const startDate = addOneMonth(filterForm.value.startDate);
+      const endDate = addOneMonth(filterForm.value.endDate);
       axios.get('http://localhost:8080/admin/statistics', {
         params: {
           startDate: filterForm.value.startDate,
@@ -90,7 +102,13 @@ export default {
         }
       }).then(response => {
         if (response.data.code === 200) {
-          statistics.value = response.data.data;
+          // 转换数据格式
+          const formattedData = response.data.data.map(item => ({
+            month: item.monthID,
+            promotionUsers: item.puserNum,
+            supportUsers: item.suserNum
+          }));
+          statistics.value = formattedData;
           renderChart();
         } else {
           ElMessage.error(response.data.message || '查询失败');
