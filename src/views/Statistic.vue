@@ -74,6 +74,9 @@ export default {
 
     const fetchStatistics = () => {
       const townID = filterForm.value.address[filterForm.value.address.length - 1];
+      // 将选择的日期往后延一个月
+      const startDate = addOneMonth(filterForm.value.startDate);
+      const endDate = addOneMonth(filterForm.value.endDate);
       axios.get('http://localhost:8080/admin/statistics', {
         params: {
           startDate: filterForm.value.startDate,
@@ -96,6 +99,16 @@ export default {
       }).catch(error => {
         ElMessage.error('查询失败: ' + error.message);
       });
+      addOneMonth = (date) => {
+        date= date.substring(0,7);
+        const [year, month] = date.split('-');
+        const nextMonth = parseInt(month) + 1;
+        if (nextMonth > 12) {
+          return `${parseInt(year) + 1}-01`;
+        } else {
+          return `${year}-${nextMonth.toString().padStart(2, '0')}`;
+        }
+      };
       
     };
 
