@@ -205,6 +205,7 @@
 
       const onLogout = () => {
         localStorage.removeItem('token')
+        localStorage.removeItem('admin')
         router.push('/')
       }
   
