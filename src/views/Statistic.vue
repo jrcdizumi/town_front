@@ -74,6 +74,10 @@ export default {
 
     const fetchStatistics = () => {
       const token = localStorage.getItem('token');
+      if (!token) {
+        ElMessage.warning('请先登录');
+        return;
+      }
       const townID = filterForm.value.address[filterForm.value.address.length - 1];
       axios.get('http://localhost:8080/admin/statistics', {
         params: {
